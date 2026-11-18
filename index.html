@@ -1,0 +1,2320 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Enter The Hollow — a dark interactive horror story archive." />
+  <title>The Hollow — Enter If You Dare</title>
+
+  <style>
+    :root {
+      --bg: #050406;
+      --surface: #0c0a0d;
+      --text: #e8e2df;
+      --muted: #9a8f8c;
+      --border: rgba(255,60,60,.16);
+      --card: linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.01));
+      --blood: #ff2b2b;
+      --blood-2: #ff6a3d;
+      --violet: #7b2ff7;
+      --radius: 16px;
+      --max: 1120px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+
+    body {
+      font-family: "Cinzel", "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background:
+        radial-gradient(900px 500px at 15% 10%, rgba(255,43,43,.10), transparent),
+        radial-gradient(700px 500px at 85% 85%, rgba(123,47,247,.10), transparent),
+        var(--bg);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      opacity: .07;
+      background-image: repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,.08) 2px 3px);
+      pointer-events: none;
+    }
+
+    .container { width: min(100% - 48px, var(--max)); margin-inline: auto; }
+
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 10001;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--blood), var(--blood-2));
+      box-shadow: 0 0 20px rgba(255,43,43,.8);
+    }
+
+    .page-transition {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: #000;
+      transform: scaleY(0);
+      transform-origin: bottom;
+      pointer-events: none;
+    }
+
+    .page-transition.active {
+      transform: scaleY(1);
+      transition: transform .45s cubic-bezier(.75,0,.25,1);
+    }
+
+    #particles { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+    header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 50;
+      padding: 18px 0;
+      transition: background .35s ease, padding .35s ease;
+    }
+
+    header.scrolled {
+      background: rgba(5,4,6,.82);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 0;
+    }
+
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+
+    .logo {
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--text);
+      text-shadow: 0 0 14px rgba(255,43,43,.55);
+    }
+
+    .logo span { color: var(--blood); }
+
+    nav ul { display: flex; gap: 28px; list-style: none; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+
+    nav a, .footer-link {
+      position: relative;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .92rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding-bottom: 4px;
+      transition: color .3s ease, transform .3s ease;
+    }
+
+    nav a::after, .footer-link::after {
+      content: "";
+      position: absolute;
+      left: 0; bottom: 0;
+      width: 100%;
+      height: 1.5px;
+      background: linear-gradient(90deg, var(--blood), var(--blood-2));
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform .38s cubic-bezier(.65,0,.35,1);
+    }
+
+    nav a:hover, .footer-link:hover {
+      color: var(--text);
+      transform: translateY(-2px);
+      text-shadow: 0 0 12px rgba(255,43,43,.55);
+    }
+
+    nav a:hover::after, .footer-link:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    .btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 26px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,43,43,.45);
+      color: var(--text);
+      background: rgba(255,43,43,.08);
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-size: .82rem;
+      cursor: pointer;
+      transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      background: rgba(255,43,43,.16);
+      box-shadow: 0 0 30px rgba(255,43,43,.35);
+    }
+
+    .btn-primary {
+      background: linear-gradient(120deg, rgba(255,43,43,.9), rgba(123,47,247,.75));
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 14px 34px rgba(255,43,43,.28);
+    }
+
+    .btn-primary:hover { box-shadow: 0 20px 50px rgba(255,43,43,.5); }
+
+    .btn-primary::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 20%, rgba(255,255,255,.35), transparent 80%);
+      transform: translateX(-120%);
+      transition: transform .65s ease;
+    }
+
+    .btn-primary:hover::after { transform: translateX(120%); }
+
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      inset: 74px 16px auto;
+      z-index: 60;
+      padding: 22px;
+      border-radius: 12px;
+      background: rgba(10,8,10,.96);
+      border: 1px solid var(--border);
+      transform: translateY(-16px);
+      opacity: 0;
+      visibility: hidden;
+      transition: .3s ease;
+    }
+
+    .mobile-menu.open { transform: translateY(0); opacity: 1; visibility: visible; }
+
+    .mobile-menu a {
+      display: block;
+      padding: 13px 4px;
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .mobile-menu a:last-child { border-bottom: 0; }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      position: relative;
+      padding: 150px 0 100px;
+      overflow: hidden;
+    }
+
+    .fog {
+      position: absolute;
+      inset: -20%;
+      z-index: -1;
+      background:
+        radial-gradient(500px 260px at 20% 30%, rgba(255,43,43,.13), transparent),
+        radial-gradient(500px 260px at 80% 70%, rgba(123,47,247,.14), transparent);
+      filter: blur(35px);
+      animation: fogMove 14s ease-in-out infinite alternate;
+    }
+
+    @keyframes fogMove {
+      from { transform: translate3d(-3%, -2%, 0) scale(1); }
+      to { transform: translate3d(3%, 2%, 0) scale(1.08); }
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 18px;
+      border-radius: 3px;
+      border: 1px solid rgba(255,43,43,.35);
+      background: rgba(255,43,43,.08);
+      color: #ffb3b3;
+      font-size: .72rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 9vw, 7rem);
+      line-height: .95;
+      font-weight: 900;
+      margin-bottom: 22px;
+      text-transform: uppercase;
+    }
+
+    .blood-text {
+      color: var(--blood);
+      text-shadow: 0 0 18px rgba(255,43,43,.55), 0 0 50px rgba(255,43,43,.25);
+      animation: bloodPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes bloodPulse {
+      0%, 100% { text-shadow: 0 0 18px rgba(255,43,43,.55), 0 0 50px rgba(255,43,43,.25); }
+      50% { text-shadow: 0 0 30px rgba(255,43,43,.85), 0 0 80px rgba(255,43,43,.4); }
+    }
+
+    .hero p {
+      max-width: 620px;
+      margin: 0 auto 36px;
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: .72rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+    }
+
+    .scroll-hint::after {
+      content: "";
+      display: block;
+      width: 1px;
+      height: 46px;
+      margin: 10px auto 0;
+      background: linear-gradient(to bottom, var(--blood), transparent);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: .25; transform: scaleY(.75); }
+      50% { opacity: 1; transform: scaleY(1); }
+    }
+
+    section { padding: 110px 0; }
+
+    .section-head { max-width: 720px; margin-bottom: 42px; }
+
+    h2 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      line-height: 1.05;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .section-head p { color: var(--muted); font-size: 1.05rem; }
+
+    .line-reveal {
+      width: 84px;
+      height: 2px;
+      margin-bottom: 22px;
+      background: linear-gradient(90deg, var(--blood), transparent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .9s cubic-bezier(.65,0,.35,1);
+    }
+
+    .line-reveal.visible { transform: scaleX(1); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      position: relative;
+      padding: 32px;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-7px);
+      border-color: rgba(255,43,43,.55);
+      box-shadow: 0 20px 50px rgba(255,43,43,.14);
+    }
+
+    .card h3 {
+      margin: 18px 0 10px;
+      font-size: 1.25rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .card p { color: var(--muted); font-size: .97rem; }
+
+    .icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      font-size: 1.4rem;
+      color: var(--blood);
+      background: rgba(255,43,43,.10);
+      border: 1px solid rgba(255,43,43,.28);
+      text-shadow: 0 0 14px rgba(255,43,43,.6);
+    }
+
+    /* Search */
+    .search-wrap {
+      position: relative;
+      max-width: 620px;
+      margin: 0 auto 28px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 16px 54px 16px 20px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,43,43,.30);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font-family: "Courier New", monospace;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .3s ease, box-shadow .3s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--blood);
+      box-shadow: 0 0 25px rgba(255,43,43,.20);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--blood);
+      pointer-events: none;
+    }
+
+    .suggestions, .search-history {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      right: 0;
+      z-index: 35;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,43,43,.25);
+      background: rgba(8,6,8,.98);
+      box-shadow: 0 24px 60px rgba(0,0,0,.65);
+      display: none;
+    }
+
+    .suggestions.open, .search-history.open { display: block; }
+
+    .suggestion {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background .2s ease, color .2s ease;
+    }
+
+    .suggestion:hover, .suggestion.active {
+      background: rgba(255,43,43,.10);
+      color: #fff;
+    }
+
+    .suggestion-category {
+      color: var(--blood);
+      font-size: .68rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .history-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .history-title {
+      color: var(--muted);
+      font-size: .68rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+
+    .clear-history {
+      border: 0;
+      background: transparent;
+      color: var(--blood);
+      font-family: inherit;
+      font-size: .68rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .history-list { list-style: none; max-height: 220px; overflow-y: auto; }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      cursor: pointer;
+      transition: background .25s ease;
+    }
+
+    .history-item:hover { background: rgba(255,43,43,.08); }
+
+    .history-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .remove-history {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .remove-history:hover { color: var(--blood); }
+
+    .history-empty {
+      color: var(--muted);
+      font-size: .85rem;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    /* Filters */
+    .category-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 34px;
+    }
+
+    .category-btn {
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,43,43,.28);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: .72rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .category-btn:hover { color: var(--text); border-color: var(--blood); }
+
+    .category-btn.active {
+      color: #fff;
+      border-color: var(--blood);
+      background: rgba(255,43,43,.16);
+      box-shadow: 0 0 22px rgba(255,43,43,.25);
+    }
+
+    /* Stories */
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .story {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--card);
+      min-height: 340px;
+      display: flex;
+      align-items: flex-end;
+      text-decoration: none;
+      color: var(--text);
+      cursor: pointer;
+      transition: transform .35s ease, box-shadow .35s ease;
+    }
+
+    .story:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 24px 60px rgba(255,43,43,.20);
+    }
+
+    .story.hidden-story { display: none; }
+
+    .story-image {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: grayscale(85%) contrast(115%) brightness(.55);
+      transition: transform .8s cubic-bezier(.2,.7,.2,1), filter .5s ease;
+    }
+
+    .story:hover .story-image {
+      transform: scale(1.09);
+      filter: grayscale(35%) contrast(120%) brightness(.7);
+    }
+
+    .story-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(5,4,6,.95), rgba(5,4,6,.25) 60%, transparent);
+    }
+
+    .story-content { position: relative; z-index: 2; padding: 26px; }
+
+    .story-tag {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 12px;
+      border-radius: 3px;
+      font-size: .68rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #ffb3b3;
+      background: rgba(255,43,43,.12);
+      border: 1px solid rgba(255,43,43,.32);
+    }
+
+    .story h3 { font-size: 1.3rem; margin-bottom: 7px; text-transform: uppercase; }
+    .story p { color: rgba(232,226,223,.72); font-size: .93rem; }
+
+    .no-results {
+      display: none;
+      margin-top: 30px;
+      padding: 26px;
+      border: 1px dashed rgba(255,43,43,.35);
+      border-radius: 8px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .no-results.show { display: block; }
+
+    /* Modal */
+    .story-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9500;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(0,0,0,.88);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .35s ease, visibility .35s ease;
+    }
+
+    .story-modal.open { opacity: 1; visibility: visible; }
+
+    .story-modal-card {
+      position: relative;
+      width: min(100%, 760px);
+      max-height: 88vh;
+      overflow-y: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255,43,43,.35);
+      background: #08060a;
+      box-shadow: 0 40px 100px rgba(0,0,0,.85), 0 0 60px rgba(255,43,43,.12);
+      transform: translateY(35px) scale(.96);
+      transition: transform .4s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .story-modal.open .story-modal-card { transform: translateY(0) scale(1); }
+
+    .story-progress-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      height: 4px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .story-progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--blood), var(--blood-2));
+      box-shadow: 0 0 14px rgba(255,43,43,.65);
+      transition: width .18s ease;
+    }
+
+    .story-modal-image {
+      width: 100%;
+      height: 280px;
+      background-size: cover;
+      background-position: center;
+      filter: grayscale(65%) contrast(120%) brightness(.55);
+      border-bottom: 1px solid rgba(255,43,43,.25);
+    }
+
+    .story-modal-content { padding: 34px; }
+
+    .reading-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: .7rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .reading-timer {
+      color: var(--blood);
+      text-shadow: 0 0 12px rgba(255,43,43,.55);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .modal-audio {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+      padding: 12px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,43,43,.22);
+      background: rgba(255,43,43,.06);
+    }
+
+    .modal-audio-label {
+      color: var(--muted);
+      font-size: .68rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .modal-audio-btn {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid rgba(255,43,43,.40);
+      background: rgba(255,43,43,.12);
+      color: var(--blood);
+      font-size: .9rem;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .modal-audio-btn:hover {
+      color: #fff;
+      border-color: var(--blood);
+      box-shadow: 0 0 18px rgba(255,43,43,.45);
+    }
+
+    .modal-audio-btn.playing { animation: audioPulse 1.4s ease-in-out infinite; }
+
+    @keyframes audioPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,43,43,.45); }
+      50% { box-shadow: 0 0 0 10px rgba(255,43,43,0); }
+    }
+
+    .story-modal-tag {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 6px 12px;
+      border-radius: 3px;
+      color: #ffb3b3;
+      font-size: .68rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      background: rgba(255,43,43,.12);
+      border: 1px solid rgba(255,43,43,.32);
+    }
+
+    .story-modal-content h3 {
+      font-size: clamp(1.7rem, 4vw, 2.4rem);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .story-modal-content p {
+      color: var(--muted);
+      margin-bottom: 16px;
+      font-family: "Courier New", monospace;
+    }
+
+    .story-modal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255,43,43,.20);
+    }
+
+    .modal-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 20px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,43,43,.40);
+      background: rgba(255,43,43,.08);
+      color: var(--text);
+      font-family: inherit;
+      font-size: .72rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .modal-nav-btn:hover:not(:disabled) {
+      color: #fff;
+      background: rgba(255,43,43,.18);
+      box-shadow: 0 0 24px rgba(255,43,43,.30);
+      transform: translateY(-2px);
+    }
+
+    .modal-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    .modal-nav-btn.next { margin-left: auto; }
+
+    .modal-counter {
+      color: var(--muted);
+      font-size: .72rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .keyboard-hint {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .keyboard-hint kbd {
+      display: inline-block;
+      min-width: 26px;
+      padding: 3px 7px;
+      margin: 0 3px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,43,43,.30);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      font-family: "Courier New", monospace;
+      font-size: .72rem;
+    }
+
+    .story-modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 6;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,43,43,.45);
+      background: rgba(5,4,6,.75);
+      color: var(--blood);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .story-modal-close:hover {
+      transform: rotate(90deg);
+      color: #fff;
+      border-color: #fff;
+    }
+
+    /* Diary */
+    .diary {
+      background:
+        radial-gradient(700px 350px at 15% 20%, rgba(255,43,43,.10), transparent),
+        var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .diary-page {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 38px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,43,43,.22);
+      background: var(--bg);
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+      position: relative;
+    }
+
+    .diary-date {
+      display: inline-block;
+      margin-bottom: 18px;
+      color: var(--blood);
+      font-size: .72rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+    }
+
+    .typewriter-line {
+      display: block;
+      min-height: 1.7em;
+      color: var(--muted);
+      font-family: "Courier New", monospace;
+      font-size: .98rem;
+      margin-bottom: 16px;
+    }
+
+    .typewriter-line::after {
+      content: "▌";
+      margin-left: 3px;
+      color: var(--blood);
+      animation: caretBlink .8s steps(1) infinite;
+    }
+
+    .typewriter-line.done::after { animation: caretFade 1s forwards; }
+
+    @keyframes caretBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes caretFade { to { opacity: 0; } }
+
+    .secret-message {
+      margin-top: 26px;
+      padding: 18px 20px;
+      border: 1px dashed rgba(255,43,43,.35);
+      border-radius: 6px;
+      background: rgba(255,43,43,.05);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .secret-hint {
+      display: block;
+      color: var(--muted);
+      font-size: .72rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+
+    .secret-text {
+      display: block;
+      margin-top: 10px;
+      color: var(--blood);
+      font-family: "Courier New", monospace;
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity .55s ease, max-height .55s ease;
+    }
+
+    .secret-message:hover .secret-text,
+    .secret-message.touched .secret-text {
+      opacity: 1;
+      max-height: 160px;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 18px;
+      margin-top: 60px;
+    }
+
+    .stat {
+      padding: 30px;
+      border-radius: var(--radius);
+      text-align: center;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: var(--blood);
+      text-shadow: 0 0 22px rgba(255,43,43,.45);
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: .82rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .cta {
+      text-align: center;
+      padding: 130px 0;
+      background:
+        radial-gradient(700px 350px at 50% 0%, rgba(255,43,43,.16), transparent),
+        var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .cta p {
+      color: var(--muted);
+      max-width: 580px;
+      margin: 0 auto 34px;
+    }
+
+    footer {
+      padding: 36px 0;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links { display: flex; gap: 22px; flex-wrap: wrap; }
+
+    /* Flicker */
+    .flicker-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 9997;
+      pointer-events: none;
+      background: rgba(255,43,43,.08);
+      opacity: 0;
+      mix-blend-mode: screen;
+    }
+
+    body.flickering .flicker-layer { animation: horrorFlicker .18s steps(2) infinite; }
+
+    @keyframes horrorFlicker {
+      0% { opacity: 0; }
+      25% { opacity: .55; }
+      50% { opacity: .08; }
+      75% { opacity: .75; }
+      100% { opacity: 0; }
+    }
+
+    body.flickering { animation: screenShake .16s linear infinite; }
+
+    @keyframes screenShake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-2px, 1px); }
+      50% { transform: translate(2px, -1px); }
+      75% { transform: translate(-1px, 2px); }
+      100% { transform: translate(1px, -2px); }
+    }
+
+    /* Jumpscare */
+    .jumpscare, .touch-scare {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background: #000;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .jumpscare.active, .touch-scare.active {
+      opacity: 1;
+      visibility: visible;
+      animation: jumpscareFlash .8s steps(4) forwards;
+    }
+
+    .jumpscare img, .touch-scare img {
+      width: min(88vw, 620px);
+      filter: grayscale(45%) contrast(160%) brightness(.75);
+      animation: scareZoom .8s cubic-bezier(.2,.8,.2,1) forwards;
+    }
+
+    .jumpscare-text, .touch-scare-text {
+      position: absolute;
+      bottom: 10%;
+      color: var(--blood);
+      font-size: clamp(1.6rem, 8vw, 3.4rem);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      text-shadow: 0 0 28px rgba(255,43,43,.9);
+      animation: scareText .8s steps(4) forwards;
+    }
+
+    @keyframes jumpscareFlash {
+      0% { opacity: 0; }
+      8% { opacity: 1; }
+      16% { opacity: 0; }
+      24% { opacity: 1; }
+      75% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes scareZoom {
+      from { transform: scale(.45) rotate(-6deg); }
+      to { transform: scale(1.3) rotate(3deg); }
+    }
+
+    @keyframes scareText {
+      0% { opacity: 0; transform: scale(.7); }
+      20% { opacity: 1; transform: scale(1.15); }
+      100% { opacity: 0; transform: scale(1.35); }
+    }
+
+    /* Audio toggle */
+    .audio-toggle {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9000;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,43,43,.35);
+      background: linear-gradient(135deg, rgba(10,6,8,.92), rgba(24,6,8,.88));
+      color: #e8e2df;
+      font-family: inherit;
+      font-size: .7rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: .3s ease;
+    }
+
+    .audio-toggle:hover {
+      border-color: var(--blood);
+      box-shadow: 0 16px 45px rgba(255,43,43,.28);
+      transform: translateY(-3px);
+    }
+
+    .audio-toggle .audio-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(255,43,43,.12);
+      border: 1px solid rgba(255,43,43,.35);
+      color: var(--blood);
+    }
+
+    .audio-toggle.on {
+      border-color: var(--blood);
+      color: #fff;
+      box-shadow: 0 18px 50px rgba(255,43,43,.35);
+    }
+
+    .audio-toggle.on .audio-icon {
+      background: rgba(255,43,43,.22);
+      animation: audioPulse 1.4s ease-in-out infinite;
+    }
+
+    /* Animations */
+    .reveal, .stagger, .section-enter, .rotate-in, .slide-left, .slide-right {
+      opacity: 0;
+      transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1);
+    }
+
+    .reveal { transform: translateY(38px); }
+    .stagger { transform: translateY(55px) scale(.97); }
+    .section-enter { transform: translateY(70px); }
+    .rotate-in { transform: perspective(900px) rotateX(28deg) translateY(60px); }
+    .slide-left { transform: translateX(-60px); }
+    .slide-right { transform: translateX(60px); }
+
+    .visible {
+      opacity: 1;
+      transform: translateY(0) scale(1) rotateX(0) translateX(0);
+    }
+
+    .delay-1 { transition-delay: .08s; }
+    .delay-2 { transition-delay: .16s; }
+    .delay-3 { transition-delay: .24s; }
+
+    @media (max-width: 980px) {
+      .story-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 760px) {
+      .menu-toggle { display: grid; place-items: center; }
+      nav { display: none; }
+      .story-grid { grid-template-columns: 1fr; }
+      .story { min-height: 270px; }
+      .hero { text-align: left; place-items: start; padding-top: 130px; }
+      .hero-actions { justify-content: flex-start; }
+      .hero-actions .btn { width: 100%; justify-content: center; }
+      .stats { grid-template-columns: 1fr; }
+      .section-head, .hero p { text-align: left; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .story-modal-content { padding: 24px; }
+      .story-modal-nav { flex-direction: column; align-items: stretch; }
+      .modal-nav-btn { justify-content: center; }
+      .modal-nav-btn.next { margin-left: 0; }
+      .audio-label { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .fog, .blood-text, .scroll-hint::after, .flicker-layer,
+      .jumpscare.active, .jumpscare img, .jumpscare-text,
+      .touch-scare.active, .touch-scare img, .touch-scare-text,
+      .audio-toggle.on .audio-icon,
+      .typewriter-line::after { animation: none; }
+      body.flickering { animation: none; }
+      body.flickering .flicker-layer { opacity: .25; }
+      .reveal, .stagger, .section-enter, .rotate-in, .slide-left, .slide-right {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+    }
+  </style>
+</head>
+
+<body class="page-loading">
+  <div class="scroll-progress"></div>
+  <div class="page-transition"></div>
+  <canvas id="particles"></canvas>
+  <div class="flicker-layer"></div>
+
+  <div class="jumpscare" id="jumpscare">
+    <img src="https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=1000&q=70" alt="A terrifying figure" />
+    <div class="jumpscare-text">Do Not Look Back</div>
+  </div>
+
+  <div class="touch-scare" id="touchScare">
+    <img src="https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=1000&q=70" alt="A terrifying figure" />
+    <div class="touch-scare-text">You Should Not Have Touched It</div>
+  </div>
+
+  <button class="audio-toggle" id="soundToggle">
+    <span class="audio-icon">🔇</span>
+    <span class="audio-label">Enable Sound</span>
+  </button>
+
+  <header id="header">
+    <div class="container nav">
+      <a href="#home" class="logo">The<span>Hollow</span></a>
+
+      <nav>
+        <ul>
+          <li><a href="#tales">Tales</a></li>
+          <li><a href="#archive">Archive</a></li>
+          <li><a href="#diary">Diary</a></li>
+          <li><a href="#evidence">Evidence</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <a href="#contact" class="btn btn-primary">Enter</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="fog"></div>
+
+      <div class="container">
+        <div class="eyebrow reveal">A collection of forbidden stories</div>
+
+        <h1 class="reveal delay-1">
+          Something is
+          <span class="blood-text glitch" data-text="watching">watching</span>
+        </h1>
+
+        <p class="reveal delay-2">
+          Deep beneath the abandoned halls of Hollow House, the walls remember every scream. Tonight, the door has opened again.
+        </p>
+
+        <div class="hero-actions reveal delay-3">
+          <a href="#tales" class="btn btn-primary">Enter The Hollow</a>
+          <a href="#archive" class="btn">Read The Archive</a>
+        </div>
+      </div>
+
+      <div class="scroll-hint">Descend</div>
+    </section>
+
+    <section id="tales">
+      <div class="container">
+        <div class="section-head section-enter">
+          <div class="line-reveal"></div>
+          <h2>Tales from below</h2>
+          <p>Three accounts recovered from the sealed rooms of Hollow House.</p>
+        </div>
+
+        <div class="grid">
+          <article class="card neon-sweep spotlight stagger rotate-in">
+            <div class="icon">☠</div>
+            <h3>The Red Door</h3>
+            <p>Every night at 3:13 AM, a door appears where no door existed before.</p>
+          </article>
+
+          <article class="card neon-sweep spotlight stagger rotate-in delay-1">
+            <div class="icon">👁</div>
+            <h3>The Watching Room</h3>
+            <p>The mirrors in Room 7 do not reflect the present.</p>
+          </article>
+
+          <article class="card neon-sweep spotlight stagger rotate-in delay-2">
+            <div class="icon">🕯</div>
+            <h3>The Last Guest</h3>
+            <p>The hotel registry lists one guest who checked in in 1974 and never checked out.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="archive">
+      <div class="container">
+        <div class="section-head section-enter">
+          <div class="line-reveal"></div>
+          <h2>The forbidden archive</h2>
+          <p>Eighteen recovered cases. Search a name, place, object, or fear.</p>
+        </div>
+
+        <div class="search-wrap">
+          <input type="text" id="storySearch" class="search-input" placeholder="Search horror stories…" autocomplete="off" />
+          <span class="search-icon">🔍</span>
+
+          <div class="suggestions" id="suggestions"></div>
+
+          <div class="search-history" id="searchHistory">
+            <div class="history-head">
+              <span class="history-title">Recent searches</span>
+              <button class="clear-history" id="clearHistory">Clear All</button>
+            </div>
+            <ul class="history-list" id="historyList"></ul>
+          </div>
+        </div>
+
+        <div class="category-filters" id="categoryFilters">
+          <button class="category-btn active" data-category="all">All Cases</button>
+          <button class="category-btn" data-category="haunted-house">Haunted House</button>
+          <button class="category-btn" data-category="ghost">Ghosts</button>
+          <button class="category-btn" data-category="cursed-object">Cursed Objects</button>
+          <button class="category-btn" data-category="forest">Forest</button>
+          <button class="category-btn" data-category="hospital">Hospital</button>
+          <button class="category-btn" data-category="urban-legend">Urban Legend</button>
+        </div>
+
+        <div class="story-grid" id="storyGrid"></div>
+
+        <div class="no-results" id="noResults">
+          No case file matched your search. Perhaps it does not want to be found.
+        </div>
+      </div>
+    </section>
+
+    <section class="diary" id="diary">
+      <div class="container">
+        <div class="section-head section-enter">
+          <div class="line-reveal"></div>
+          <h2>The final diary</h2>
+          <p>Recovered from Room 7. The handwriting changes after the fourth entry.</p>
+        </div>
+
+        <article class="diary-page stagger rotate-in">
+          <span class="diary-date">October 31 — 11:58 PM</span>
+
+          <h3>Entry 4: It knows my name</h3>
+
+          <span class="typewriter-line" data-text="I found another door behind the wardrobe. It was not there yesterday. The wood was warm, as if something had been breathing against it."></span>
+
+          <span class="typewriter-line" data-text="I heard my mother calling from the hallway, but my mother died eleven years ago. I did not open the door. I only listened."></span>
+
+          <span class="typewriter-line" data-text="Then the knocking stopped. And something whispered: “You were supposed to open it.”"></span>
+
+          <div class="secret-message" id="secretMessage">
+            <span class="secret-hint">Hold / hover to reveal</span>
+            <span class="secret-text">
+              It was never behind the wardrobe.
+              <br />
+              It was standing behind you while you read this.
+            </span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="evidence">
+      <div class="container">
+        <div class="section-head section-enter">
+          <div class="line-reveal"></div>
+          <h2>Recovered evidence</h2>
+          <p>The following numbers were found carved into the walls of Hollow House.</p>
+        </div>
+
+        <div class="stats">
+          <div class="stat slide-left">
+            <strong class="counter" data-target="13">0</strong>
+            <span>Missing guests</span>
+          </div>
+          <div class="stat stagger delay-1">
+            <strong class="counter" data-target="313" data-suffix=" AM">0</strong>
+            <span>The waking hour</span>
+          </div>
+          <div class="stat slide-right">
+            <strong class="counter" data-target="7" data-suffix=" Rooms">0</strong>
+            <span>Sealed forever</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta" id="contact">
+      <div class="container">
+        <h2 class="section-enter">The door is already open.</h2>
+        <p class="reveal delay-1">Send your name—if you dare. But remember: once The Hollow knows it, it never forgets.</p>
+        <a href="mailto:enter@thehollow.house" class="btn btn-primary reveal delay-2">Send Your Name</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>© 2026 The Hollow. Do not return after midnight.</span>
+
+      <div class="footer-links">
+        <a href="#tales" class="footer-link">Tales</a>
+        <a href="#archive" class="footer-link">Archive</a>
+        <a href="#diary" class="footer-link">Diary</a>
+        <a href="#evidence" class="footer-link">Evidence</a>
+        <a href="#contact" class="footer-link">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /* Header */
+    const header = document.getElementById("header");
+
+    window.addEventListener("scroll", () => {
+      header.classList.toggle("scrolled", window.scrollY > 30);
+    });
+
+    /* Reveals */
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
+
+    const scrollObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          scrollObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.18, rootMargin: "0px 0px -60px 0px" });
+
+    document.querySelectorAll(".stagger, .line-reveal, .section-enter, .rotate-in, .slide-left, .slide-right")
+      .forEach((el) => scrollObserver.observe(el));
+
+    /* Stories */
+    const horrorStories = [
+      { title: "The Whispering Hall", tag: "Case 013", category: "haunted-house", text: "Visitors report hearing a child counting backward from thirteen. Each night, the count begins again—until someone answers.", image: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Black Lake", tag: "Case 027", category: "urban-legend", text: "At midnight, the water reflects a house that is no longer there. Those who look too long hear their own name beneath the surface.", image: "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Silent Ward", tag: "Case 041", category: "hospital", text: "The abandoned hospital still records heartbeats after midnight. The machines were disconnected years ago.", image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Mirror Tenant", tag: "Case 052", category: "cursed-object", text: "Every mirror in the apartment shows the same room—but someone is always sitting in it.", image: "https://images.unsplash.com/photo-1516575334481-f85287c2c82d?auto=format&fit=crop&w=900&q=70" },
+      { title: "The 3:13 Train", tag: "Case 064", category: "urban-legend", text: "A train arrives at the abandoned platform every night, but no passenger ever steps off.", image: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Doll Collector", tag: "Case 078", category: "cursed-object", text: "The dolls in the locked attic change positions whenever the lights go out.", image: "https://images.unsplash.com/photo-1603569283847-aa295f0bf0f5?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Basement Door", tag: "Case 083", category: "haunted-house", text: "The basement door was sealed with nails, but every morning it is found open.", image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Forest That Follows", tag: "Case 091", category: "forest", text: "No matter which direction she walked, the trees always returned her to the same clearing.", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Last Photograph", tag: "Case 104", category: "haunted-house", text: "In every photo taken inside the house, one extra face appears in the background.", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Empty Classroom", tag: "Case 117", category: "urban-legend", text: "At 2 AM, the school intercom turns on by itself and reads the names of students who never attended.", image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Hotel Room 7", tag: "Case 126", category: "haunted-house", text: "Guests hear knocking from inside the bathroom, although it has been sealed for decades.", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Grave With No Name", tag: "Case 138", category: "ghost", text: "Every rainstorm washes away the dirt, revealing a fresh name carved into the stone.", image: "https://images.unsplash.com/photo-1508361001413-7a9dca21d08a?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Attic Breathing", tag: "Case 149", category: "haunted-house", text: "The attic expands and contracts slowly, as though the house itself is inhaling.", image: "https://images.unsplash.com/photo-1481277542470-605612bd2d61?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Phone Call From 1974", tag: "Case 156", category: "ghost", text: "Every night, the disconnected landline rings once. The caller asks for someone who died in 1974.", image: "https://images.unsplash.com/photo-1523966211575-eb4a01e7dd51?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Red Umbrella", tag: "Case 162", category: "urban-legend", text: "On rainy nights, a red umbrella follows people home—but no one is holding it.", image: "https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Child in the Well", tag: "Case 175", category: "ghost", text: "A voice from the dry well asks children to look down, promising to show them their future.", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=70" },
+      { title: "The House That Forgot", tag: "Case 188", category: "cursed-object", text: "Every morning, the family wakes up in a house where their photographs have disappeared.", image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=900&q=70" },
+      { title: "The Final Broadcast", tag: "Case 199", category: "urban-legend", text: "A dead radio station broadcasts one final message at 3:13 AM: “Do not answer the door.”", image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=900&q=70" }
+    ];
+
+    const storyGrid = document.getElementById("storyGrid");
+    const noResults = document.getElementById("noResults");
+
+    function formatCategory(category) {
+      return category.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+    }
+
+    horrorStories.forEach((story, index) => {
+      const delayClass = index % 3 === 1 ? " delay-1" : index % 3 === 2 ? " delay-2" : "";
+
+      const card = document.createElement("a");
+      card.className = `story stagger rotate-in${delayClass}`;
+      card.href = "#";
+      card.dataset.title = story.title.toLowerCase();
+      card.dataset.tag = story.tag.toLowerCase();
+      card.dataset.text = story.text.toLowerCase();
+      card.dataset.category = story.category;
+
+      card.innerHTML = `
+        <div class="story-image" style="background-image:url('${story.image}')"></div>
+        <div class="story-overlay"></div>
+        <div class="story-content">
+          <span class="story-tag">${story.tag} • ${formatCategory(story.category)}</span>
+          <h3>${story.title}</h3>
+          <p>${story.text}</p>
+        </div>
+      `;
+
+      storyGrid.appendChild(card);
+    });
+
+    /* Search history */
+    const searchInput = document.getElementById("storySearch");
+    const searchHistoryBox = document.getElementById("searchHistory");
+    const historyList = document.getElementById("historyList");
+    const clearHistoryButton = document.getElementById("clearHistory");
+
+    let searchHistory = JSON.parse(localStorage.getItem("hollowSearchHistory") || "[]");
+
+    function saveHistory() {
+      localStorage.setItem("hollowSearchHistory", JSON.stringify(searchHistory.slice(0, 8)));
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = "";
+
+      if (!searchHistory.length) {
+        historyList.innerHTML = `<li class="history-empty">No recent searches.</li>`;
+        return;
+      }
+
+      searchHistory.forEach((term, index) => {
+        const item = document.createElement("li");
+        item.className = "history-item";
+
+        item.innerHTML = `
+          <span class="history-text">${term}</span>
+          <button class="remove-history" data-index="${index}">✕</button>
+        `;
+
+        item.addEventListener("click", (event) => {
+          if (event.target.classList.contains("remove-history")) return;
+
+          searchInput.value = term;
+          applyFilters(term);
+          searchHistoryBox.classList.remove("open");
+        });
+
+        item.querySelector(".remove-history").addEventListener("click", (event) => {
+          event.stopPropagation();
+          searchHistory.splice(index, 1);
+          saveHistory();
+          renderHistory();
+        });
+
+        historyList.appendChild(item);
+      });
+    }
+
+    function addSearchHistory(term) {
+      const cleanTerm = term.trim();
+      if (!cleanTerm) return;
+
+      searchHistory = [
+        cleanTerm,
+        ...searchHistory.filter(item => item.toLowerCase() !== cleanTerm.toLowerCase())
+      ].slice(0, 8);
+
+      saveHistory();
+      renderHistory();
+    }
+
+    /* Filters */
+    let activeCategory = "all";
+
+    function applyFilters(term) {
+      const query = term.trim().toLowerCase();
+      let visibleCount = 0;
+
+      document.querySelectorAll("#storyGrid .story").forEach((story) => {
+        const matchesSearch =
+          !query ||
+          story.dataset.title.includes(query) ||
+          story.dataset.tag.includes(query) ||
+          story.dataset.text.includes(query);
+
+        const matchesCategory =
+          activeCategory === "all" ||
+          story.dataset.category === activeCategory;
+
+        const shouldShow = matchesSearch && matchesCategory;
+
+        story.classList.toggle("hidden-story", !shouldShow);
+
+        if (shouldShow) visibleCount++;
+      });
+
+      noResults.classList.toggle("show", visibleCount === 0);
+    }
+
+    /* Autocomplete */
+    const suggestionsBox = document.getElementById("suggestions");
+    let activeSuggestionIndex = -1;
+
+    function renderSuggestions(query) {
+      const cleanQuery = query.trim().toLowerCase();
+      suggestionsBox.innerHTML = "";
+
+      if (!cleanQuery) {
+        suggestionsBox.classList.remove("open");
+        return;
+      }
+
+      const matches = horrorStories
+        .filter(story =>
+          story.title.toLowerCase().includes(cleanQuery) ||
+          story.category.toLowerCase().includes(cleanQuery) ||
+          story.text.toLowerCase().includes(cleanQuery)
+        )
+        .slice(0, 6);
+
+      if (!matches.length) {
+        suggestionsBox.innerHTML = `<div class="suggestion"><span>No matching case file</span></div>`;
+        suggestionsBox.classList.add("open");
+        return;
+      }
+
+      matches.forEach((story) => {
+        const suggestion = document.createElement("div");
+        suggestion.className = "suggestion";
+
+        suggestion.innerHTML = `
+          <span>${story.title}</span>
+          <span class="suggestion-category">${formatCategory(story.category)}</span>
+        `;
+
+        suggestion.addEventListener("click", () => {
+          searchInput.value = story.title;
+          applyFilters(story.title);
+          suggestionsBox.classList.remove("open");
+          openStoryModal(story);
+        });
+
+        suggestionsBox.appendChild(suggestion);
+      });
+
+      activeSuggestionIndex = -1;
+      suggestionsBox.classList.add("open");
+    }
+
+    searchInput.addEventListener("input", (event) => {
+      applyFilters(event.target.value);
+      renderSuggestions(event.target.value);
+    });
+
+    searchInput.addEventListener("focus", () => {
+      renderHistory();
+      searchHistoryBox.classList.add("open");
+    });
+
+    searchInput.addEventListener("keydown", (event) => {
+      const suggestions = suggestionsBox.querySelectorAll(".suggestion");
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
+      }
+
+      if (event.key === "Enter" && activeSuggestionIndex >= 0) {
+        event.preventDefault();
+        suggestions[activeSuggestionIndex]?.click();
+        return;
+      }
+
+      if (event.key === "Enter") {
+        addSearchHistory(searchInput.value);
+        suggestionsBox.classList.remove("open");
+      }
+
+      suggestions.forEach((item, index) => {
+        item.classList.toggle("active", index === activeSuggestionIndex);
+      });
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".search-wrap")) {
+        suggestionsBox.classList.remove("open");
+        searchHistoryBox.classList.remove("open");
+      }
+    });
+
+    clearHistoryButton.addEventListener("click", () => {
+      searchHistory = [];
+      saveHistory();
+      renderHistory();
+    });
+
+    /* Category filters */
+    document.querySelectorAll(".category-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        activeCategory = button.dataset.category;
+
+        document.querySelectorAll(".category-btn").forEach(item => item.classList.remove("active"));
+        button.classList.add("active");
+
+        applyFilters(searchInput.value);
+      });
+    });
+
+    /* Story modal */
+    const storyModal = document.createElement("div");
+    storyModal.className = "story-modal";
+
+    storyModal.innerHTML = `
+      <div class="story-modal-card">
+        <button class="story-modal-close">✕</button>
+
+        <div class="story-progress-wrap">
+          <div class="story-progress" id="storyProgress"></div>
+        </div>
+
+        <div class="story-modal-image"></div>
+
+        <div class="story-modal-content">
+          <div class="reading-meta">
+            <span class="reading-timer" id="readingTimer">00:00</span>
+            <span>Reading Time</span>
+          </div>
+
+          <div class="modal-audio">
+            <button class="modal-audio-btn" id="modalAudioBtn">🔇</button>
+            <span class="modal-audio-label">Spooky Ambience</span>
+          </div>
+
+          <span class="story-modal-tag"></span>
+          <h3></h3>
+          <p class="story-modal-text"></p>
+
+          <div class="story-modal-nav">
+            <button class="modal-nav-btn prev" id="prevStory">← Previous</button>
+            <span class="modal-counter" id="storyCounter"></span>
+            <button class="modal-nav-btn next" id="nextStory">Next →</button>
+          </div>
+
+          <div class="keyboard-hint">
+            <kbd>←</kbd> Previous <kbd>→</kbd> Next <kbd>Esc</kbd> Close
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(storyModal);
+
+    const modalImage = storyModal.querySelector(".story-modal-image");
+    const modalTag = storyModal.querySelector(".story-modal-tag");
+    const modalTitle = storyModal.querySelector("h3");
+    const modalText = storyModal.querySelector(".story-modal-text");
+    const modalClose = storyModal.querySelector(".story-modal-close");
+    const prevStoryButton = document.getElementById("prevStory");
+    const nextStoryButton = document.getElementById("nextStory");
+    const storyCounter = document.getElementById("storyCounter");
+    const storyProgress = document.getElementById("storyProgress");
+    const readingTimer = document.getElementById("readingTimer");
+    const modalAudioButton = document.getElementById("modalAudioBtn");
+    const storyModalCard = storyModal.querySelector(".story-modal-card");
+
+    let currentStoryIndex = 0;
+    let readingSeconds = 0;
+    let readingTimerInterval = null;
+    let modalAudioContext;
+    let modalAmbientGain;
+    let modalAudioPlaying = false;
+
+    function updateModal(story) {
+      modalImage.style.backgroundImage = `url('${story.image}')`;
+      modalTag.textContent = `${story.tag} • ${formatCategory(story.category)}`;
+      modalTitle.textContent = story.title;
+      modalText.textContent = story.text;
+
+      storyCounter.textContent = `Case ${currentStoryIndex + 1} / ${horrorStories.length}`;
+
+      prevStoryButton.disabled = currentStoryIndex === 0;
+      nextStoryButton.disabled = currentStoryIndex === horrorStories.length - 1;
+
+      storyModalCard.scrollTop = 0;
+      updateReadingProgress();
+    }
+
+    function updateReadingProgress() {
+      const scrollable = storyModalCard.scrollHeight - storyModalCard.clientHeight;
+      const progress = scrollable > 0 ? (storyModalCard.scrollTop / scrollable) * 100 : 100;
+
+      storyProgress.style.width = `${progress}%`;
+    }
+
+    function startReadingTimer() {
+      stopReadingTimer();
+
+      readingSeconds = 0;
+      readingTimer.textContent = "00:00";
+
+      readingTimerInterval = setInterval(() => {
+        readingSeconds++;
+
+        const minutes = String(Math.floor(readingSeconds / 60)).padStart(2, "0");
+        const seconds = String(readingSeconds % 60).padStart(2, "0");
+
+        readingTimer.textContent = `${minutes}:${seconds}`;
+      }, 1000);
+    }
+
+    function stopReadingTimer() {
+      if (readingTimerInterval) {
+        clearInterval(readingTimerInterval);
+        readingTimerInterval = null;
+      }
+    }
+
+    function openStoryModal(story) {
+      currentStoryIndex = horrorStories.findIndex(item => item.title === story.title);
+
+      updateModal(story);
+
+      storyModal.classList.add("open");
+      document.body.style.overflow = "hidden";
+
+      startReadingTimer();
+      startModalAudio();
+    }
+
+    function closeStoryModal() {
+      storyModal.classList.remove("open");
+      document.body.style.overflow = "";
+
+      stopReadingTimer();
+      stopModalAudio();
+    }
+
+    function showStory(index) {
+      if (index < 0 || index >= horrorStories.length) return;
+
+      currentStoryIndex = index;
+      updateModal(horrorStories[index]);
+
+      readingSeconds = 0;
+      readingTimer.textContent = "00:00";
+    }
+
+    storyGrid.addEventListener("click", (event) => {
+      const card = event.target.closest(".story");
+
+      if (!card) return;
+
+      event.preventDefault();
+
+      const story = horrorStories.find(
+        item => item.title.toLowerCase() === card.dataset.title
+      );
+
+      if (story) openStoryModal(story);
+    });
+
+    prevStoryButton.addEventListener("click", () => showStory(currentStoryIndex - 1));
+    nextStoryButton.addEventListener("click", () => showStory(currentStoryIndex + 1));
+
+    modalClose.addEventListener("click", closeStoryModal);
+
+    storyModal.addEventListener("click", (event) => {
+      if (event.target === storyModal) closeStoryModal();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (!storyModal.classList.contains("open")) return;
+
+      const isInputFocused =
+        document.activeElement.tagName === "INPUT" ||
+        document.activeElement.tagName === "TEXTAREA";
+
+      if (isInputFocused) return;
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        showStory(currentStoryIndex + 1);
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        showStory(currentStoryIndex - 1);
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeStoryModal();
+      }
+    });
+
+    storyModalCard.addEventListener("scroll", updateReadingProgress);
+
+    /* Modal audio */
+    function createModalAudio() {
+      modalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      modalAmbientGain = modalAudioContext.createGain();
+      modalAmbientGain.gain.value = 0;
+      modalAmbientGain.connect(modalAudioContext.destination);
+
+      const drone = modalAudioContext.createOscillator();
+      const whisper = modalAudioContext.createOscillator();
+      const filter = modalAudioContext.createBiquadFilter();
+
+      drone.type = "sine";
+      drone.frequency.value = 42;
+
+      whisper.type = "sawtooth";
+      whisper.frequency.value = 58;
+
+      filter.type = "lowpass";
+      filter.frequency.value = 260;
+
+      drone.connect(filter);
+      whisper.connect(filter);
+      filter.connect(modalAmbientGain);
+
+      drone.start();
+      whisper.start();
+    }
+
+    async function startModalAudio() {
+      if (!modalAudioContext) createModalAudio();
+
+      if (modalAudioContext.state === "suspended") {
+        await modalAudioContext.resume();
+      }
+
+      modalAmbientGain.gain.cancelScheduledValues(modalAudioContext.currentTime);
+      modalAmbientGain.gain.linearRampToValueAtTime(0.045, modalAudioContext.currentTime + 1.2);
+
+      modalAudioPlaying = true;
+      modalAudioButton.textContent = "🔊";
+      modalAudioButton.classList.add("playing");
+    }
+
+    function stopModalAudio() {
+      if (!modalAudioContext || !modalAmbientGain) return;
+
+      modalAmbientGain.gain.cancelScheduledValues(modalAudioContext.currentTime);
+      modalAmbientGain.gain.linearRampToValueAtTime(0, modalAudioContext.currentTime + 0.8);
+
+      modalAudioPlaying = false;
+      modalAudioButton.textContent = "🔇";
+      modalAudioButton.classList.remove("playing");
+    }
+
+    modalAudioButton.addEventListener("click", async () => {
+      if (!modalAudioContext) createModalAudio();
+
+      if (modalAudioContext.state === "suspended") {
+        await modalAudioContext.resume();
+      }
+
+      if (modalAudioPlaying) {
+        stopModalAudio();
+      } else {
+        startModalAudio();
+      }
+    });
+
+    /* Typewriter */
+    const typewriterObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        const line = entry.target;
+        const fullText = line.dataset.text || "";
+        let index = 0;
+
+        typewriterObserver.unobserve(line);
+
+        function type() {
+          if (index <= fullText.length) {
+            line.textContent = fullText.slice(0, index);
+            index++;
+            setTimeout(type, 24 + Math.random() * 38);
+          } else {
+            line.classList.add("done");
+          }
+        }
+
+        setTimeout(type, 350);
+      });
+    }, { threshold: 0.35 });
+
+    document.querySelectorAll(".typewriter-line").forEach(line => typewriterObserver.observe(line));
+
+    /* Secret message */
+    const secretMessage = document.getElementById("secretMessage");
+
+    secretMessage.addEventListener("mouseenter", () => secretMessage.classList.add("touched"));
+    secretMessage.addEventListener("mouseleave", () => secretMessage.classList.remove("touched"));
+
+    secretMessage.addEventListener("touchstart", () => {
+      secretMessage.classList.add("touched");
+      triggerFlicker(450);
+    });
+
+    secretMessage.addEventListener("touchend", () => {
+      setTimeout(() => secretMessage.classList.remove("touched"), 2500);
+    });
+
+    /* Page transition */
+    const pageTransition = document.querySelector(".page-transition");
+
+    window.addEventListener("DOMContentLoaded", () => {
+      document.body.classList.remove("page-loading");
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const targetId = link.getAttribute("href");
+
+        if (targetId === "#" || !document.querySelector(targetId)) return;
+
+        event.preventDefault();
+        pageTransition.classList.add("active");
+
+        setTimeout(() => {
+          document.querySelector(targetId).scrollIntoView({ behavior: "auto" });
+          pageTransition.classList.remove("active");
+        }, 430);
+      });
+    });
+
+    /* Progress */
+    const progressBar = document.querySelector(".scroll-progress");
+
+    window.addEventListener("scroll", () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
+
+      progressBar.style.width = `${progress}%`;
+    });
+
+    /* Counters */
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        const counter = entry.target;
+        const target = parseFloat(counter.dataset.target);
+        const suffix = counter.dataset.suffix || "";
+        const duration = 1600;
+        const startTime = performance.now();
+
+        const update = (now) => {
+          const progress = Math.min((now - startTime) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+
+          counter.textContent = Math.round(target * eased) + suffix;
+
+          if (progress < 1) requestAnimationFrame(update);
+        };
+
+        requestAnimationFrame(update);
+        counterObserver.unobserve(counter);
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll(".counter").forEach(counter => counterObserver.observe(counter));
+
+    /* Mobile menu */
+    const menuToggle = document.getElementById("menuToggle");
+    const mobileMenu = document.createElement("div");
+
+    mobileMenu.className = "mobile-menu";
+    mobileMenu.innerHTML = `
+      <a href="#tales">Tales</a>
+      <a href="#archive">Archive</a>
+      <a href="#diary">Diary</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#contact">Contact</a>
+    `;
+
+    document.body.appendChild(mobileMenu);
+
+    menuToggle.addEventListener("click", () => mobileMenu.classList.toggle("open"));
+
+    mobileMenu.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => mobileMenu.classList.remove("open"));
+    });
+
+    /* Particles */
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
+    let particles = [];
+
+    function getParticleCount() {
+      const width = window.innerWidth;
+      return width < 640 ? 24 : width < 1024 ? 38 : 58;
+    }
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      particles = Array.from({ length: getParticleCount() }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.7 + .5,
+        vx: (Math.random() - .5) * .25,
+        vy: (Math.random() - .5) * .25,
+        opacity: Math.random() * .55 + .25
+      }));
+    }
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((particle) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 43, 43, ${particle.opacity})`;
+        ctx.shadowColor = "rgba(255, 43, 43, .8)";
+        ctx.shadowBlur = 12;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(drawParticles);
+    }
+
+    resizeCanvas();
+    drawParticles();
+
+    let resizeTimer;
+
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resizeCanvas, 180);
+    });
+
+    /* Flicker */
+    function triggerFlicker(duration = 900) {
+      document.body.classList.add("flickering");
+
+      setTimeout(() => document.body.classList.remove("flickering"), duration);
+    }
+
+    setInterval(() => {
+      if (Math.random() > 0.72) triggerFlicker(500 + Math.random() * 700);
+    }, 7000);
+
+    /* Main audio */
+    let audioContext;
+    let ambientGain;
+    let soundEnabled = false;
+
+    const soundToggle = document.getElementById("soundToggle");
+    const soundIcon = soundToggle.querySelector(".audio-icon");
+    const soundLabel = soundToggle.querySelector(".audio-label");
+
+    function createAmbientSound() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      ambientGain = audioContext.createGain();
+      ambientGain.gain.value = 0;
+      ambientGain.connect(audioContext.destination);
+
+      const oscillator1 = audioContext.createOscillator();
+      const oscillator2 = audioContext.createOscillator();
+      const filter = audioContext.createBiquadFilter();
+
+      oscillator1.type = "sine";
+      oscillator1.frequency.value = 48;
+
+      oscillator2.type = "sawtooth";
+      oscillator2.frequency.value = 63;
+
+      filter.type = "lowpass";
+      filter.frequency.value = 320;
+
+      oscillator1.connect(filter);
+      oscillator2.connect(filter);
+      filter.connect(ambientGain);
+
+      oscillator1.start();
+      oscillator2.start();
+
+      ambientGain.gain.linearRampToValueAtTime(0.055, audioContext.currentTime + 3);
+    }
+
+    function playScareSound() {
+      if (!soundEnabled || !audioContext) return;
+
+      const now = audioContext.currentTime;
+      const impact = audioContext.createOscillator();
+      const impactGain = audioContext.createGain();
+
+      impact.type = "sawtooth";
+      impact.frequency.setValueAtTime(320, now);
+      impact.frequency.exponentialRampToValueAtTime(35, now + 0.45);
+
+      impactGain.gain.setValueAtTime(0.0001, now);
+      impactGain.gain.exponentialRampToValueAtTime(0.35, now + 0.03);
+      impactGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
+
+      impact.connect(impactGain);
+      impactGain.connect(audioContext.destination);
+
+      impact.start(now);
+      impact.stop(now + 0.8);
+    }
+
+    soundToggle.addEventListener("click", async () => {
+      if (!audioContext) createAmbientSound();
+
+      if (audioContext.state === "suspended") await audioContext.resume();
+
+      soundEnabled = !soundEnabled;
+
+      if (soundEnabled) {
+        ambientGain.gain.linearRampToValueAtTime(0.055, audioContext.currentTime + 1);
+        soundIcon.textContent = "🔊";
+        soundLabel.textContent = "Sound On";
+        soundToggle.classList.add("on");
+      } else {
+        ambientGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.6);
+        soundIcon.textContent = "🔇";
+        soundLabel.textContent = "Enable Sound";
+        soundToggle.classList.remove("on");
+      }
+    });
+
+    /* Jumpscare */
+    const jumpscare = document.getElementById("jumpscare");
+    const touchScare = document.getElementById("touchScare");
+    let jumpscareShown = false;
+    let mobileScareShown = false;
+
+    function triggerJumpscare() {
+      if (jumpscareShown) return;
+
+      jumpscareShown = true;
+      jumpscare.classList.add("active");
+      triggerFlicker(700);
+      playScareSound();
+
+      setTimeout(() => jumpscare.classList.remove("active"), 800);
+    }
+
+    function triggerMobileScare() {
+      if (mobileScareShown) return;
+
+      mobileScareShown = true;
+      touchScare.classList.add("active");
+      triggerFlicker(750);
+      playScareSound();
+
+      setTimeout(() => touchScare.classList.remove("active"), 850);
+    }
+
+    const archiveSection = document.getElementById("archive");
+
+    const scareObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setTimeout(triggerJumpscare, 1800);
+          scareObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+
+    scareObserver.observe(archiveSection);
+
+    window.addEventListener("touchstart", () => {
+      setTimeout(triggerMobileScare, 2200);
+    }, { once: true, passive: true });
+
+    document.getElementById("diary").addEventListener("touchstart", () => {
+      setTimeout(triggerMobileScare, 1200);
+    }, { once: true, passive: true });
+  </script>
+</body>
+</html>
